@@ -26,12 +26,26 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-      - name: Set up SSH
+      - name: Setup SSH Key
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+          echo "Creating .ssh directory..."
+          mkdir -p ~/.ssh && echo "✓ mkdir success" || echo "✗ mkdir failed"
+          
+          echo "Writing SSH key..."
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa && echo "✓ write success" || echo "✗ write failed"
+          
+          echo "Setting permissions..."
+          chmod 600 ~/.ssh/id_rsa && echo "✓ chmod success" || echo "✗ chmod failed"
+          
+          echo "Running ssh-keyscan..."
+          ssh-keyscan -H github.com >> ~/.ssh/known_hosts 2>&1 && echo "✓ keyscan success" || echo "✗ keyscan failed"
+          
+          echo "Listing files..."
+          ls -al ~/.ssh/ && echo "✓ ls success" || echo "✗ ls failed"
+          
+          echo "Reading key header..."
+          head -n 5 ~/.ssh/id_rsa && echo "✓ head success" || echo "✗ head failed"
+        shell: bash
 
       - name: Deploy to EC2
         run: |
